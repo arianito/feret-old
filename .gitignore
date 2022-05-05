@@ -1,0 +1,8 @@
+.DS_Store
+.env
+.env.production
+npm-debug.log*
+/.idea
+/node_modules
+/build
+/dist

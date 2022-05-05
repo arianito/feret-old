@@ -1,0 +1,20 @@
+{
+  "short_name": "Junkier",
+  "name": "Junkier Junk Shop",
+  "icons": [
+    {
+      "src": "logo48.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#e9c46a",
+  "background_color": "#ffffff"
+}
