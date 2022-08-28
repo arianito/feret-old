@@ -1,6 +1,6 @@
 {
   "name": "feret",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "author": "Aryan Alikhani",
   "description": "Yet another state management for react.",
   "license": "MIT",
@@ -18,9 +18,11 @@
     "url": "https://github.com/xeuus/feret/issues"
   },
   "homepage": "https://github.com/xeuus/feret#readme",
-  "keywords": ["react", "state management", "shared state"],
-  "dependencies": {
-    "typescript": "^4.6.4",
-    "react": "^18.1.0"
+  "keywords": ["react", "state management", "shared state", "service", "soa", "architecture"],
+  "devDependencies": {
+    "typescript": "^4.8.2"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
   }
 }

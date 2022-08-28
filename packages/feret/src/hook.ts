@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { metadataOf } from "./metadata";
-import { useStore } from "./context";
+import { useEffect, useState } from 'react';
+import { metadataOf } from './metadata';
+import { useStore } from './context';
 
 /**
  * Inject and use desired service
@@ -25,14 +25,10 @@ export function useObserver(services?: { new (...args: any[]): any }[]) {
     const releaseQueue: any[] = [];
     if (services && services.length > 0) {
       const listener = channel.listen((id, variable, value) => {
-        if (
-          services.some((type) => metadataOf(type.prototype).id === id) &&
-          !released
-        ) {
+        if (services.some((type) => metadataOf(type.prototype).id === id) && !released) {
           const key = id + variable;
           updater[1]((state: any) => {
-            if (typeof state[key] !== "undefined" && state[key] === value)
-              return state;
+            if (typeof state[key] !== 'undefined' && state[key] === value) return state;
             return {
               ...state,
               [key]: value,

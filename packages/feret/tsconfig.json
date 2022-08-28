@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "target": "esnext",
-    "lib": [],
+    "lib": ["dom"],
     "experimentalDecorators": true,
     "declaration": true,
     "allowJs": true,

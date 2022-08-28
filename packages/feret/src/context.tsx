@@ -1,14 +1,13 @@
-import React, { useContext, createContext } from "react";
-import { Store } from "./service";
+import React, { createContext, useContext } from 'react';
+import { Store } from './service';
 
-const FeretContext = createContext<Store>({} as Store);
+export const FeretContext = createContext<Store>({} as Store);
 
 /**
  * @returns the Store instance
  */
 export function useStore() {
-  const store = useContext(FeretContext);
-  return store;
+  return useContext(FeretContext);
 }
 
 /**
@@ -16,9 +15,5 @@ export function useStore() {
  * @returns
  */
 export function FeretProvider(props: { store: Store; children?: any }) {
-  return (
-    <FeretContext.Provider value={props.store}>
-      {props.children}
-    </FeretContext.Provider>
-  );
+  return <FeretContext.Provider value={props.store}>{props.children}</FeretContext.Provider>;
 }

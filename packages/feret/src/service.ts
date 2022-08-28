@@ -1,4 +1,4 @@
-import { config, metadata, metadataOf } from "./metadata";
+import { config, metadata, metadataOf } from './metadata';
 
 const identifier = 0x56837736;
 
@@ -11,12 +11,12 @@ export type Store = {
 };
 
 /**
- * mark which classes going to be used as Service
+ * Mark which classes going to be used as Service
  * @Service
  * class Temp {
  *   ...
  */
-export function Service<T extends { new (...args: any[]): {} }>(target: T) {
+export function Service<T extends { new (...args: any[]): any }>(target: T) {
   const id = config.counter++;
   config.services[id] = target;
   metadata(target.prototype, { id });
@@ -24,7 +24,7 @@ export function Service<T extends { new (...args: any[]): {} }>(target: T) {
 }
 
 /**
- * mark which properties are going to be watched
+ * Mark which properties are going to be watched
  * @Service
  * class Temp {
  *   @observable variable = undefined;
@@ -89,43 +89,39 @@ class EventBus {
 }
 
 /**
- * creates a new fresh Store
+ * Creates a new Feret Store
  * @returns the Store instance
  */
 export function createStore(): Store {
   const container: Store = {} as Store;
   container.channel = new EventBus();
-  container.pick = (service) =>
-    container.services[metadataOf(service.prototype).id];
-  container.orderedInvoke = (fn, ...args: any[]) =>
-    invoke(container, false, fn, ...args);
-  container.invoke = (fn, ...args: any[]) =>
-    invoke(container, true, fn, ...args);
+  container.pick = (service) => container.services[metadataOf(service.prototype).id];
+  container.orderedInvoke = (fn, ...args: any[]) => invoke(container, false, fn, ...args);
+  container.invoke = (fn, ...args: any[]) => invoke(container, true, fn, ...args);
   container.services = config.services.map(
     (target) =>
       new (class extends target {
         context = container;
         constructor(...args: any[]) {
           super(...args);
-          const _this = this;
-          Object.getOwnPropertyNames(_this)
+          Object.getOwnPropertyNames(this)
             .filter(
               (key) =>
-                typeof _this[key] === "object" &&
-                _this[key].toString() === "[object Object]" &&
-                _this[key].identifier == identifier
+                typeof this[key] === 'object' &&
+                this[key].toString() === '[object Object]' &&
+                this[key].identifier == identifier,
             )
             .forEach((key) => {
-              const id = _this[key].type;
-              Object.defineProperty(_this, key, {
+              const id = this[key].type;
+              Object.defineProperty(this, key, {
                 configurable: false,
                 enumerable: true,
                 get: () => container.services[id],
-                set: () => {},
+                set: () => null,
               });
             });
         }
-      })()
+      })(),
   );
   container.services.forEach((service) => {
     const { id, observables = [] } = metadataOf(service);
@@ -160,8 +156,7 @@ export function createStore(): Store {
   });
   container.pick = (target) => {
     const { id } = metadataOf(target.prototype);
-    if (!container.services || typeof id === "undefined")
-      throw new Error("Service not found");
+    if (!container.services || typeof id === 'undefined') throw new Error('Service not found');
     return container.services[id];
   };
   return container;
@@ -171,7 +166,7 @@ function invoke(context: Store, parallel: boolean, fn: string, ...args: any[]) {
   const pm = context.services
     .reduce<any[]>((acc, service) => {
       const { order = 0, id } = metadataOf(service);
-      if (typeof service[fn] === "function") {
+      if (typeof service[fn] === 'function') {
         acc.push([id, order, service]);
       }
       return acc;
@@ -180,11 +175,10 @@ function invoke(context: Store, parallel: boolean, fn: string, ...args: any[]) {
     .map((a: any) => a[2]);
 
   return Promise.resolve().then(() => {
-    if (parallel)
-      return Promise.all(pm.map((service) => service[fn].apply(service, args)));
+    if (parallel) return Promise.all(pm.map((service) => service[fn].apply(service, args)));
     return pm.reduce(
       (p, service) => p.then(() => service[fn].apply(service, args)),
-      Promise.resolve()
+      Promise.resolve(),
     );
   });
 }
