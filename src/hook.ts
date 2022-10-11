@@ -17,7 +17,7 @@ export function useService<T>(service: { new (...args: any[]): T }): T {
  * once value changed current component will update automatically
  * @param services Array of Service::class
  */
-export function useObserver(services?: { new (...args: any[]): any }[]) {
+export function useObserver(services?: Array<{ new (...args: any[]): any }>) {
   const { channel } = useStore();
   const updater = useState({});
   useEffect(() => {

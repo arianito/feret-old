@@ -8,6 +8,8 @@ export type Store = {
   pick<T>(service: { new (container?: Store): T }): T;
   orderedInvoke(fn: string, ...args: any[]): Promise<void>;
   invoke(fn: string, ...args: any[]): Promise<void>;
+  stopTimer(fn: any): void;
+  startTimer(fn: any): void;
 };
 
 /**
@@ -66,6 +68,15 @@ export function wire<T>(service: { new (...args: any[]): T }): T {
   return { type: id, identifier: identifier } as unknown as T;
 }
 
+/**
+ * Get context instance from a service
+ * @param service Service instance definition
+ * @returns store instance
+ */
+export function getContext(service: any): Store {
+  return service.context;
+}
+
 class EventBus {
   listeners: any[] = [];
   dispatch = (...args: any[]) => {
@@ -98,6 +109,8 @@ export function createStore(): Store {
   container.pick = (service) => container.services[metadataOf(service.prototype).id];
   container.orderedInvoke = (fn, ...args: any[]) => invoke(container, false, fn, ...args);
   container.invoke = (fn, ...args: any[]) => invoke(container, true, fn, ...args);
+  container.startTimer = (fn) => fn.start();
+  container.stopTimer = (fn) => fn.stop();
   container.services = config.services.map(
     (target) =>
       new (class extends target {
@@ -124,7 +137,7 @@ export function createStore(): Store {
       })(),
   );
   container.services.forEach((service) => {
-    const { id, observables = [] } = metadataOf(service);
+    const { id, observables = [], timers = [] } = metadataOf(service);
     const { channel } = container;
     observables.forEach((key) => {
       const alias = `$$${key}`;
@@ -152,6 +165,62 @@ export function createStore(): Store {
           }
         },
       });
+    });
+
+    timers.forEach((data, i) => {
+      const { key, ms, options } = data;
+      let timer: any = null;
+      let startDate: Date | undefined;
+      let counter = 0;
+
+      function stop() {
+        clearTimeout(timer);
+        timer = null;
+        counter = 0;
+      }
+
+      function recall() {
+        timer = setTimeout(() => {
+          if (options && typeof options.count == 'number') {
+            if (++counter > options.count) {
+              stop();
+              return;
+            }
+          }
+          const response = service[key].call(service, startDate);
+          if (response !== false) {
+            recall();
+          }
+        }, ms);
+      }
+
+      Object.defineProperty(service[key], 'stop', {
+        writable: false,
+        enumerable: true,
+        value: stop,
+        configurable: true,
+      });
+
+      Object.defineProperty(service[key], 'start', {
+        writable: false,
+        enumerable: true,
+        value: function () {
+          if (timer) {
+            if (options && options.callOnce) {
+              return;
+            }
+            stop();
+          }
+          startDate = new Date();
+          recall();
+        },
+        configurable: true,
+      });
+      if (!options || !options.waitForCall) {
+        startDate = new Date();
+        counter = 0;
+        recall();
+      }
     });
   });
   container.pick = (target) => {

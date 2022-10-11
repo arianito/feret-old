@@ -1,8 +1,10 @@
 .DS_Store
+.idea
+.vscode
 .env
-.env.production
-npm-debug.log*
-/.idea
-/node_modules
-/build
-/dist
+dist
+node_modules
+*.bin
+*.sqlite
+run.sh
+*.log

@@ -3,6 +3,8 @@ export const config = {
   services: [] as any[],
 };
 
+export type TimerOptions = { waitForCall: boolean; count: number; callOnce: boolean };
+
 export type Metadata = {
   id: number;
   name: string;
@@ -10,6 +12,7 @@ export type Metadata = {
   version: number;
   observables: string[];
   saved: string[];
+	timers: { key: string; ms: number, options?: Partial<TimerOptions> }[];
 };
 
 export function metadataOf(target: any): Metadata {
